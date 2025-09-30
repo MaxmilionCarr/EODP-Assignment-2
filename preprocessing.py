@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import csv
 
 PERSONS_COLUMNS = 'persid,agegroup,sex,relationship,carlicence,mbikelicence,otherlicence,nolicence,fulltimework,parttimework,casualwork,anywork,studying,emptype,persinc,anywfh,wfhmon,wfhtue,wfhwed,wfhthu,wfhfri,wfhsat,wfhsun,homesubregion_ASGS,homeregion_ASGS'.split(',')
 JOURNEY_EDUCATION_COLUMNS = 'persid,jteid,dayType,start_loc,start_stopid,start_time,start_LGA,end_loc,end_stopid,end_time,end_LGA,mainmode_desc_01,mainmode_desc_02,mainmode_desc_03,mainmode_desc_04,mainmode_desc_05,mainmode_desc_06,mainmode_desc_07,mainmode_desc_08,mainmode_desc_09,mainmode_desc_10,mainmode_desc_11,mainmode_desc_12,mainmode_desc_13,mainmode_desc_14,mainmode_desc_15,destpurp1_desc_01,destpurp1_desc_02,destpurp1_desc_03,destpurp1_desc_04,destpurp1_desc_05,destpurp1_desc_06,destpurp1_desc_07,destpurp1_desc_08,destpurp1_desc_09,destpurp1_desc_10,destpurp1_desc_11,destpurp1_desc_12,destpurp1_desc_13,destpurp1_desc_14,destpurp1_desc_15,destplace1_desc_01,destplace1_desc_02,destplace1_desc_03,destplace1_desc_04,destplace1_desc_05,destplace1_desc_06,destplace1_desc_07,destplace1_desc_08,destplace1_desc_09,destplace1_desc_10,destplace1_desc_11,destplace1_desc_12,destplace1_desc_13,destplace1_desc_14,destplace1_desc_15,startime_01,startime_02,startime_03,startime_04,startime_05,startime_06,startime_07,startime_08,startime_09,startime_10,startime_11,startime_12,startime_13,startime_14,startime_15,arrtime_01,arrtime_02,arrtime_03,arrtime_04,arrtime_05,arrtime_06,arrtime_07,arrtime_08,arrtime_09,arrtime_10,arrtime_11,arrtime_12,arrtime_13,arrtime_14,arrtime_15,vistadist_01,vistadist_02,vistadist_03,vistadist_04,vistadist_05,vistadist_06,vistadist_07,vistadist_08,vistadist_09,vistadist_10,vistadist_11,vistadist_12,vistadist_13,vistadist_14,vistadist_15,travtime_01,travtime_02,travtime_03,travtime_04,travtime_05,travtime_06,travtime_07,travtime_08,travtime_09,travtime_10,travtime_11,travtime_12,travtime_13,travtime_14,travtime_15,main_journey_mode,journey_travel_time,journey_distance,journey_elapsed_time'.split(',')
@@ -34,6 +35,12 @@ def fetch_transport_mode():
     # Group by persid and find the most used mode of transport
     result = df.groupby('persid')['highest_mode_of_transport'].apply(lambda x: x.mode()[0] if not x.isna().all() else None).reset_index()
     result.columns = ['persid', 'most_used_mode']
+
+    with open('most_used_mode.csv', 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(result.columns)
+        writer.writerows(result.values)
+    f.close()
     return result
 
 # Uses stops and 

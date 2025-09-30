@@ -1,67 +1,9 @@
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_selection import mutual_info_classif
-from sklearn.metrics import normalized_mutual_info_score
-from sklearn.utils import resample
 from scipy.stats import entropy
 from preprocessing import quick_data
 
-NORMAL_MI_THRESHOLD = 0.1  # threshold for selecting features
-
-def MI_feature_ranks():
-    X = quick_data().drop(columns=['persid'])
-    y = X.pop('most_used_mode')
-
-    le = LabelEncoder()
-    y = le.fit_transform(y)
-
-    n_boot = 5
-    mi_scores = np.zeros((n_boot, X.shape[1]))
-
-    for i in range(n_boot):
-        print(f"Bootstrap iteration {i+1}/{n_boot}")
-        Xb, yb = resample(X, y, replace=True, random_state=i)
-        mi_scores[i] = mutual_info_classif(
-            Xb, yb,
-            discrete_features='auto',
-            random_state=i,
-        )
-
-    mi_df = pd.DataFrame(mi_scores, columns=X.columns)
-    mean_mi = mi_df.mean().sort_values(ascending=False)
-    std_mi  = mi_df.std().reindex(mean_mi.index)
-
-    # --- Entropy of the target (same for all features)
-    p_y = np.bincount(y) / len(y)
-    H_y = entropy(p_y, base=2)
-
-    # --- Normalise each feature’s MI by sqrt(H_x * H_y)
-    mean_mi_norm = pd.Series(index=mean_mi.index, dtype=float)
-    std_mi_norm  = pd.Series(index=mean_mi.index, dtype=float)
-
-    for col in mean_mi.index:
-        x = X[col]
-        # entropy of this feature’s distribution
-        p_x = np.bincount(x) / len(x) if np.issubdtype(x.dtype, np.integer) \
-              else np.bincount(LabelEncoder().fit_transform(x)) / len(x)
-        H_x = entropy(p_x, base=2)
-        if H_x > 0 and H_y > 0:
-            mean_mi_norm[col] = mean_mi[col] / np.sqrt(H_x * H_y)
-            std_mi_norm[col]  = std_mi[col]  / np.sqrt(H_x * H_y)
-        else:
-            mean_mi_norm[col] = 0.0
-            std_mi_norm[col]  = 0.0
-
-    print("Average normalised MI feature importance:\n", mean_mi_norm)
-    print("\nStd of normalised MI feature importance:\n", std_mi_norm)
-
-    selected_features = mean_mi_norm[mean_mi_norm > NORMAL_MI_THRESHOLD].index.tolist()
-    print(f"\nSelected features (normalised MI > {NORMAL_MI_THRESHOLD}):\n", selected_features)
-
-    return mean_mi, std_mi, mean_mi_norm, std_mi_norm, le.classes_
-
+NORMAL_MI_THRESHOLD = 0.05  # threshold for selecting features
 
 
 def compute_prob(labels: pd.Series, weights: pd.Series = None):
@@ -104,6 +46,23 @@ def compute_normalized_mutual_info(x: pd.Series, y: pd.Series, weights: pd.Serie
     H_y = compute_entropy(y, weights)
     H_y_given_x = compute_conditional_entropy(x, y, weights)
     return (H_y - H_y_given_x) / np.sqrt(H_x * H_y) if H_x > 0 and H_y > 0 else 0.0
+
+def select_features(df: pd.DataFrame, target_col='most_used_mode', weights_col='perspoststratweight', threshold=NORMAL_MI_THRESHOLD):
+    """Select features with NMI above threshold."""
+    y = df[target_col]
+    weights = df[weights_col] if weights_col in df.columns else None
+    features = df.drop(columns=[target_col, weights_col] if weights_col in df.columns else [target_col])
+
+    selected_features = []
+    for col in features.columns:
+        nmi = compute_normalized_mutual_info(features[col], y, weights)
+        if nmi >= threshold:
+            selected_features.append(col)
+            print(f"Selected {col} with NMI={nmi:.4f}")
+        else:
+            print(f"Rejected {col} with NMI={nmi:.4f}")
+
+    return selected_features
 
 if __name__ == "__main__":
     df = quick_data().drop(columns=['persid'])
