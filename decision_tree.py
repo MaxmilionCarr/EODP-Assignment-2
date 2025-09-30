@@ -57,7 +57,6 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     return clf
 
 if __name__ == "__main__":
-    # Example: pass in your feature list from MI.py
     selected_features = select_features(quick_data().drop(columns=['persid']))
     print("Selected features:", selected_features)
     run_decision_tree(selected_features)
