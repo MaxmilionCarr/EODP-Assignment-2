@@ -62,7 +62,24 @@ def select_features(df: pd.DataFrame, target_col='most_used_mode', weights_col='
         else:
             print(f"Rejected {col} with NMI={nmi:.4f}")
 
-    return selected_features
+    # Get rid of duplicate features (Different encodings of same variable) and keep the one with highest NMI
+    final_features = []
+    seen_prefixes = set()
+    for col in selected_features:
+        prefix = col.split('_')[0]  # assuming encoding suffixes are separated by '_'
+        if prefix not in seen_prefixes:
+            seen_prefixes.add(prefix)
+            final_features.append(col)
+        else:
+            # If already seen, check if current has higher NMI than the one already selected
+            existing_col = next(f for f in final_features if f.startswith(prefix))
+            existing_nmi = compute_normalized_mutual_info(df[existing_col], y, weights)
+            current_nmi = compute_normalized_mutual_info(df[col], y, weights)
+            if current_nmi > existing_nmi:
+                final_features.remove(existing_col)
+                final_features.append(col)
+
+    return final_features
 
 if __name__ == "__main__":
     df = quick_data().drop(columns=['persid'])

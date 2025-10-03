@@ -2,7 +2,9 @@ import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import (
+    accuracy_score, confusion_matrix, ConfusionMatrixDisplay, classification_report
+)
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from preprocessing import quick_data
@@ -87,15 +89,45 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     plt.title("Confusion Matrix for Best Decision Tree")
     plt.show()
 
+    # ---- Classification report ----
+    print(classification_report(y_test, y_pred, sample_weight=w_test))
+
     # ---- Visualise tree ----
-    plt.figure(figsize=(16, 10))
+    plt.figure(figsize=(50, 10))
     plot_tree(
         final_clf,
         feature_names=selected_features,
         class_names=final_clf.classes_,
         filled=True,
-        fontsize=6
+        proportion=True,
+        precision=3,
+        fontsize=4
     )
+    plt.show()
+
+    # ---- Feature importance bar chart ----
+    importances = pd.Series(final_clf.feature_importances_, index=selected_features)
+    importances = importances.sort_values(ascending=False).drop(importances[importances == 0].index)
+
+    plt.figure(figsize=(10, 6))
+    importances.plot(kind="bar", color="skyblue")
+    plt.title("Feature Importance Ranking (Decision Tree)")
+    plt.ylabel("Importance Score")
+    plt.tight_layout()
+    plt.show()
+
+    # ---- Accuracy heatmap for parameter tuning ----
+    results_df[["depth", "min_samples"]] = pd.DataFrame(results_df["params"].tolist(), index=results_df.index)
+    mean_acc_matrix = results_df.groupby(["depth", "min_samples"])["accuracy"].mean().unstack()
+
+    plt.figure(figsize=(8, 6))
+    plt.imshow(mean_acc_matrix, cmap="viridis", aspect="auto", origin="lower")
+    plt.colorbar(label="Mean Accuracy")
+    plt.xticks(range(len(mean_acc_matrix.columns)), mean_acc_matrix.columns)
+    plt.yticks(range(len(mean_acc_matrix.index)), mean_acc_matrix.index)
+    plt.xlabel("min_samples_leaf")
+    plt.ylabel("max_depth")
+    plt.title("Accuracy Landscape across Parameters")
     plt.show()
 
     return final_clf, mean_acc

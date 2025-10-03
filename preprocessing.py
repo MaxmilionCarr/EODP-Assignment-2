@@ -117,55 +117,74 @@ from sklearn.preprocessing import OrdinalEncoder
 # NEED TO DO, THIS IS THE PREPROCESSING
 def preprocess_persons(df):
     '''
-    Preprocess the persons dataframe
+    Preprocess the persons dataframe with multiple encoding strategies
+    for ordinal variables (fine, coarse, binary).
     '''
     df = df.copy()
     
-    # Ordinal Encoding
-    ordinal_mappings = {
-        'agegroup': {'0->4': 0, '5->9': 1, '10->14': 2, '15->19': 3, '20->24': 4, '25->29': 5, '30->34': 6, '35->39': 7, '40->44': 8, '45->49': 9, '50->54': 10, '55->59': 11, '60->64': 12, '65->69': 13, '70->74': 14, '75->79': 15, '80->84': 16, '85->89': 17, '90->94': 18, '95->99': 19, '100+': 20},
-        'persinc': {'Negative income': 0,
-                    'Nil income': 0,                       # treat Nil the same as Negative
-                    '$1-$149 ($1-$7,799)': 1,
-                    '$150-$299 ($7,800-$15,599)': 2,
-                    '$300-$399 ($15,600-$20,799)': 3,
-                    '$400-$499 ($20,800-$25,999)': 4,
-                    '$500-$649 ($26,000-$33,799)': 5,
-                    '$650-$799 ($33,800-$41,599)': 6,
-                    '$800-$999 ($41,600-$51,999)': 7,
-                    '$1,000-$1,249 ($52,000-$64,999)': 8,
-                    '$1,250-$1,499 ($65,000-$77,999)': 9,
-                    '$1,500-$1,749 ($78,000-$90,999)': 10,
-                    '$1,750-$1,999 ($91,000-$103,999)': 11,
-                    '$2,000-$2,999 ($104,000-$155,999)': 12,
-                    '$3,000-$3,499 ($156,000-$181,999)': 13
-                    },
-        'totalwfh': {'Never': 0, 'Occasional': 1, 'Frequent': 2, 'Always': 3},
+    # ---- AGEGROUP encodings ----
+    age_map_fine = {
+        '0->4': 0, '5->9': 1, '10->14': 2, '15->19': 3, '20->24': 4,
+        '25->29': 5, '30->34': 6, '35->39': 7, '40->44': 8, '45->49': 9,
+        '50->54': 10, '55->59': 11, '60->64': 12, '65->69': 13, '70->74': 14,
+        '75->79': 15, '80->84': 16, '85->89': 17, '90->94': 18, '95->99': 19, '100+': 20
     }
+    age_map_coarse = {
+        **{k: 0 for k in ['0->4','5->9','10->14','15->19','20->24']},   # youth
+        **{k: 1 for k in ['25->29','30->34','35->39','40->44']},        # early adult
+        **{k: 2 for k in ['45->49','50->54','55->59','60->64']},        # mid adult
+        **{k: 3 for k in ['65->69','70->74','75->79','80->84','85->89','90->94','95->99','100+']}  # seniors
+    }
+    age_map_binary = {k: (0 if v < 10 else 1) for k,v in age_map_fine.items()}  # <50 vs 50+
+
+    if 'agegroup' in df.columns:
+        df['agegroup_fine']   = df['agegroup'].map(age_map_fine)
+        df['agegroup_coarse'] = df['agegroup'].map(age_map_coarse)
+        df['agegroup_binary'] = df['agegroup'].map(age_map_binary)
+        df.drop(columns=['agegroup'], axis=1, inplace=True)
     
-    for col in ordinal_mappings:
-        enc = OrdinalEncoder(categories=[list(ordinal_mappings[col].keys())])
-        if col in df.columns:
-            df[col] = enc.fit_transform(df[[col]])
-    
-    # One-Hot Encoding
+    # ---- PERSINC encodings ----
+    inc_map_fine = {
+        'Negative income': 0, 'Nil income': 0,
+        '$1-$149 ($1-$7,799)': 1, '$150-$299 ($7,800-$15,599)': 2,
+        '$300-$399 ($15,600-$20,799)': 3, '$400-$499 ($20,800-$25,999)': 4,
+        '$500-$649 ($26,000-$33,799)': 5, '$650-$799 ($33,800-$41,599)': 6,
+        '$800-$999 ($41,600-$51,999)': 7, '$1,000-$1,249 ($52,000-$64,999)': 8,
+        '$1,250-$1,499 ($65,000-$77,999)': 9, '$1,500-$1,749 ($78,000-$90,999)': 10,
+        '$1,750-$1,999 ($91,000-$103,999)': 11, '$2,000-$2,999 ($104,000-$155,999)': 12,
+        '$3,000-$3,499 ($156,000-$181,999)': 13
+    }
+    inc_map_coarse = {k: (0 if v <= 3 else 1 if v <= 7 else 2 if v <= 10 else 3) for k,v in inc_map_fine.items()}
+    inc_map_binary = {k: (0 if v <= 6 else 1) for k,v in inc_map_fine.items()}  # < $800 vs $800+
+
+    if 'persinc' in df.columns:
+        df['persinc_fine']   = df['persinc'].map(inc_map_fine)
+        df['persinc_coarse'] = df['persinc'].map(inc_map_coarse)
+        df['persinc_binary'] = df['persinc'].map(inc_map_binary)
+        df.drop(columns=['persinc'], axis=1, inplace=True)
+
+    # ---- TOTALWFH encodings ----
+    wfh_map = {'Never': 0, 'Occasional': 1, 'Frequent': 2, 'Always': 3}
+    wfh_map_binary = {'Never': 0, 'Occasional': 0, 'Frequent': 1, 'Always': 1}
+
+    if 'totalwfh' in df.columns:
+        df['totalwfh_ord']   = df['totalwfh'].map(wfh_map)
+        df['totalwfh_bin']   = df['totalwfh'].map(wfh_map_binary)
+        df.drop(columns=['totalwfh'], axis=1, inplace=True)
+
+    # ---- One-hot categorical encoding ----
     df = pd.get_dummies(df, columns=ONE_HOT_ENCODING, drop_first=True)
-    
-    # Binary Encoding
+
+    # ---- Binary columns ----
     for col in BINARY:
         if col in df.columns:
             if col == 'sex':
                 df[col] = df[col].map({'Male': 1, 'Female': 0})
             else:
-                df[col] = df[col].map({'Yes': 1, 'No': 0})
-                df[col] = df[col].fillna(0)  # Treat NaN as 'No' (0)
-    
-    # Numeric columns - ensure they are numeric
-    for col in NUMERIC:
-        if col in df.columns:
-            df[col] = pd.to_numeric(df[col], errors='coerce')
+                df[col] = df[col].map({'Yes': 1, 'No': 0}).fillna(0)
     
     return df
+
 
 def quick_data():
     df = fetch_data()
