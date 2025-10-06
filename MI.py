@@ -3,7 +3,7 @@ import pandas as pd
 from scipy.stats import entropy
 from preprocessing import quick_data
 
-NORMAL_MI_THRESHOLD = 0.05  # threshold for selecting features
+NORMAL_MI_THRESHOLD = 0.1  # threshold for selecting features
 
 
 def compute_prob(labels: pd.Series, weights: pd.Series = None):
