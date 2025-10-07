@@ -105,8 +105,8 @@ def corr_analysis():
     df = df.merge(wasted_time(), on="persid", how="left").dropna(subset=["wasted_time"])
 
     y = df["wasted_time"].astype(float)
-    X = get_X(df)
-    ranks = corr_values(X, y)
+    x = get_X(df)
+    ranks = corr_values(x, y)
 
     plot_bar(
         ranks,
@@ -114,7 +114,7 @@ def corr_analysis():
         title="Features by Linear Correlation with Wasted Time",
         out_path=os.path.join(OUT_DIR, "wasted_time.png"),
     )
-    travel_mode_corr(df, X, out_dir=OUT_DIR)
+    travel_mode_corr(df, x, out_dir=OUT_DIR)
 
 # Run program
 if __name__ == "__main__":
