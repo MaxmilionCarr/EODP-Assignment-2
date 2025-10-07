@@ -111,7 +111,7 @@ def corr_analysis():
     plot_bar(
         ranks,
         xlabel="Pearson r",
-        title="Features by Linear Correlation with Wasted Time",
+        title="Feature Correlations with Wasted Time",
         out_path=os.path.join(OUT_DIR, "wasted_time.png"),
     )
     travel_mode_corr(df, x, out_dir=OUT_DIR)
