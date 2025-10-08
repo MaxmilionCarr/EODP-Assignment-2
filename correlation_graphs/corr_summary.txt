@@ -85,3 +85,20 @@ trip_efficiency
   parttimework: 0.024873
   casualwork: -0.002000
 
+trip_length
+  nolicence: -0.273815
+  persinc_fine: 0.270182
+  anywork: 0.260311
+  persinc_coarse: 0.252962
+  fulltimework: 0.245236
+  persinc_binary: 0.238978
+  agegroup_fine: 0.221769
+  agegroup_coarse: 0.208190
+  sex: 0.131624
+  agegroup_binary: 0.106866
+  mbikelicence: 0.096502
+  otherlicence: 0.085481
+  totalwfh_bin: 0.023711
+  casualwork: -0.023127
+  parttimework: -0.006619
+

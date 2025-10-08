@@ -40,7 +40,8 @@ def wasted_time():
 
 # Filter feature matrix
 def get_X(df):
-    drop_cols = {"persid", "wasted_time", "most_used_mode", "perspoststratweight", "overall_trip_efficiency"}
+    drop_cols = {"persid", "wasted_time", "most_used_mode", "perspoststratweight",
+                 "overall_trip_efficiency", "overall_trip_length"}
     X = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
     return X.select_dtypes(include=[np.number]).fillna(0)
 
@@ -127,21 +128,35 @@ def corr_analysis():
     x = get_X(df)
     ranks = corr_values(x, y)
 
+    # Wasted time plot
     plot_bar(
         ranks,
         xlabel="Pearson r",
         title="Feature Correlations with Wasted Time",
         out_path=os.path.join(OUT_DIR, "wasted_time.png"),
     )
+
+    # Travel mode plots
     travel_mode_corr(df, x, out_dir=OUT_DIR)
 
+    # Trip efficiency plot
     y_eff = df["overall_trip_efficiency"].astype(float)
     ranks_eff = corr_values(x, y_eff)
     plot_bar(
         ranks_eff,
         xlabel="Pearson r",
-        title="Feature Correlations with Overall Trip Efficiency",
+        title="Feature Correlations with Trip Efficiency",
         out_path=os.path.join(OUT_DIR, "trip_efficiency.png"),
+    )
+
+    # Trip length plot
+    y_len = pd.to_numeric(df["overall_trip_length"], errors="coerce")
+    ranks_len = corr_values(x, y_len)
+    plot_bar(
+        ranks_len,
+        xlabel="Pearson r",
+        title="Feature Correlations with Trip Length",
+        out_path=os.path.join(OUT_DIR, "trip_length.png"),
     )
 
 # Run program
