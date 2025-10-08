@@ -58,6 +58,8 @@ def plot_bar(series, xlabel, title, out_path):
 
     ax.barh(series.index, series.values)
     ax.axvline(0, linestyle="--", linewidth=1)
+    # Manually set x axis scale for easier graph comparisons
+    ax.set_xlim(-0.17, 0.17)
     ax.set_xlabel(xlabel, fontsize=LABEL_SIZE)
     ax.set_ylabel("Feature", fontsize=LABEL_SIZE)
     ax.set_title(title, fontsize=TITLE_SIZE)
