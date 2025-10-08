@@ -68,3 +68,20 @@ active_transport
   parttimework: 0.006634
   casualwork: -0.013945
 
+trip_efficiency
+  nolicence: -0.292586
+  anywork: 0.274816
+  persinc_fine: 0.253165
+  agegroup_fine: 0.251255
+  agegroup_coarse: 0.238902
+  persinc_binary: 0.232175
+  persinc_coarse: 0.229059
+  fulltimework: 0.223449
+  agegroup_binary: 0.139348
+  mbikelicence: 0.100084
+  sex: 0.094345
+  otherlicence: 0.080837
+  totalwfh_bin: -0.025657
+  parttimework: 0.024873
+  casualwork: -0.002000
+

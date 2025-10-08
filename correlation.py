@@ -70,7 +70,7 @@ def plot_bar(series, xlabel, title, out_path):
     ax.barh(series.index, series.values)
     ax.axvline(0, linestyle="--", linewidth=1)
     # Manually set x axis scale for easier graph comparisons
-    ax.set_xlim(-0.17, 0.17)
+    ax.set_xlim(-0.3, 0.3)
     ax.set_xlabel(xlabel, fontsize=LABEL_SIZE)
     ax.set_ylabel("Feature", fontsize=LABEL_SIZE)
     ax.set_title(title, fontsize=TITLE_SIZE)
@@ -134,6 +134,15 @@ def corr_analysis():
         out_path=os.path.join(OUT_DIR, "wasted_time.png"),
     )
     travel_mode_corr(df, x, out_dir=OUT_DIR)
+
+    y_eff = df["overall_trip_efficiency"].astype(float)
+    ranks_eff = corr_values(x, y_eff)
+    plot_bar(
+        ranks_eff,
+        xlabel="Pearson r",
+        title="Feature Correlations with Overall Trip Efficiency",
+        out_path=os.path.join(OUT_DIR, "trip_efficiency.png"),
+    )
 
 # Run program
 if __name__ == "__main__":
