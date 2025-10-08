@@ -45,6 +45,31 @@ def get_X(df):
     X = df.drop(columns=[c for c in drop_cols if c in df.columns], errors="ignore")
     return X.select_dtypes(include=[np.number]).fillna(0)
 
+# Computes a global feature order for graphs
+def feature_order(df, X):
+    targets = {}
+
+    # Scalar targets
+    targets["wasted_time"] = pd.to_numeric(df["wasted_time"], errors="coerce")
+    targets["trip_efficiency"] = pd.to_numeric(df["overall_trip_efficiency"], errors="coerce")
+    targets["trip_length"] = pd.to_numeric(df["overall_trip_length"], errors="coerce")
+
+    # Mode-group targets
+    for name, modes in GROUPS.items():
+        y = df["most_used_mode"].isin(modes).astype(float)
+        if y.nunique() == 2:  # ensure both classes exist
+            targets[f"{name}_transport"] = y
+
+    # Compute correlations matrix
+    R_all = pd.DataFrame(index=X.columns, dtype=float)
+    for key, y in targets.items():
+        ok = np.isfinite(y)
+        R_all[key] = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson"))
+
+    R_all = R_all.fillna(0.0)
+    order = R_all.abs().max(axis=1).sort_values(ascending=False).index
+    return order, R_all
+
 # Gets pearson r values for all numeric features
 def corr_values(X, y):
     ok = np.isfinite(y)
@@ -85,7 +110,7 @@ def plot_bar(series, xlabel, title, out_path):
     write_report(series, out)
 
 # Perform Pearson correlation per travel mode
-def travel_mode_corr(df, X, out_dir=OUT_DIR):
+def travel_mode_corr(df, X, order, out_dir=OUT_DIR):
     os.makedirs(out_dir, exist_ok=True)
 
     groups = {
@@ -94,23 +119,16 @@ def travel_mode_corr(df, X, out_dir=OUT_DIR):
         if df["most_used_mode"].isin(modes).astype(int).nunique() == 2
     }
 
-    R = pd.DataFrame(index=X.columns, columns=groups.keys(), dtype=float)
-
     for name, modes in groups.items():
         y = df["most_used_mode"].isin(modes).astype(float)
         ok = np.isfinite(y)
-        R[name] = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson"))
-
-    R = R.fillna(0.0)
-    order = R.abs().max(axis=1).sort_values(ascending=False).index.tolist()
-
-    for group_name in groups.keys():
-        s = R.loc[order, group_name]
+        s = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson")).fillna(0.0)
+        s = s.reindex(order)  # enforce global order
         plot_bar(
             s,
             xlabel="Pearson r",
-            title=f"Feature Correlations with {group_name} Transport",
-            out_path=os.path.join(out_dir, f"{group_name.lower()}_transport.png"),
+            title=f"Feature Correlations with {name} Transport",
+            out_path=os.path.join(out_dir, f"{name.lower()}_transport.png"),
         )
 
 # Construct dataframe and produce plots
@@ -122,38 +140,35 @@ def corr_analysis():
         f.write("Correlation summary\n\n")
 
     df = quick_data()
-    df = df.merge(wasted_time(), on="persid", how="left").dropna(subset=["wasted_time"])
+    df = df.merge(wasted_time(), on="persid", how="left").dropna(subset=["wasted_time"])  # keep if you still want this plot
 
-    y = df["wasted_time"].astype(float)
     x = get_X(df)
-    ranks = corr_values(x, y)
+
+    # Compute global feature order for plots
+    order, R_all = feature_order(df, x)
 
     # Wasted time plot
     plot_bar(
-        ranks,
+        R_all.loc[order, "wasted_time"],
         xlabel="Pearson r",
         title="Feature Correlations with Wasted Time",
         out_path=os.path.join(OUT_DIR, "wasted_time.png"),
     )
 
     # Travel mode plots
-    travel_mode_corr(df, x, out_dir=OUT_DIR)
+    travel_mode_corr(df, x, order, out_dir=OUT_DIR)
 
     # Trip efficiency plot
-    y_eff = df["overall_trip_efficiency"].astype(float)
-    ranks_eff = corr_values(x, y_eff)
     plot_bar(
-        ranks_eff,
+        R_all.loc[order, "trip_efficiency"],
         xlabel="Pearson r",
         title="Feature Correlations with Trip Efficiency",
         out_path=os.path.join(OUT_DIR, "trip_efficiency.png"),
     )
 
     # Trip length plot
-    y_len = pd.to_numeric(df["overall_trip_length"], errors="coerce")
-    ranks_len = corr_values(x, y_len)
     plot_bar(
-        ranks_len,
+        R_all.loc[order, "trip_length"],
         xlabel="Pearson r",
         title="Feature Correlations with Trip Length",
         out_path=os.path.join(OUT_DIR, "trip_length.png"),

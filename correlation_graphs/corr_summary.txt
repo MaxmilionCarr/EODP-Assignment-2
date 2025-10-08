@@ -1,104 +1,104 @@
 Correlation summary
 
 wasted_time
-  anywork: 0.087575
   nolicence: -0.082281
-  sex: -0.072326
-  totalwfh_bin: 0.065976
-  casualwork: 0.065976
+  anywork: 0.087575
   persinc_fine: 0.042471
   persinc_coarse: 0.036099
-  parttimework: 0.032045
-  persinc_binary: 0.027323
-  otherlicence: -0.023508
-  mbikelicence: -0.022296
   agegroup_fine: 0.020075
   fulltimework: 0.016964
-  agegroup_binary: -0.016205
+  persinc_binary: 0.027323
   agegroup_coarse: 0.005994
+  agegroup_binary: -0.016205
+  sex: -0.072326
+  totalwfh_bin: 0.065976
+  mbikelicence: -0.022296
+  otherlicence: -0.023508
+  casualwork: 0.065976
+  parttimework: 0.032045
 
 public_transport
-  agegroup_coarse: -0.115987
   nolicence: 0.034862
-  agegroup_fine: -0.091611
   anywork: -0.061253
-  agegroup_binary: -0.094020
-  totalwfh_bin: 0.106231
-  fulltimework: -0.031953
   persinc_fine: -0.040155
-  persinc_binary: -0.048135
   persinc_coarse: -0.036043
+  agegroup_fine: -0.091611
+  fulltimework: -0.031953
+  persinc_binary: -0.048135
+  agegroup_coarse: -0.115987
+  agegroup_binary: -0.094020
+  sex: -0.029651
+  totalwfh_bin: 0.106231
   mbikelicence: -0.064927
   otherlicence: -0.056589
-  sex: -0.029651
-  parttimework: -0.030985
   casualwork: -0.000205
+  parttimework: -0.030985
 
 private_transport
-  agegroup_coarse: 0.163011
   nolicence: -0.135540
-  agegroup_fine: 0.145794
   anywork: 0.119948
-  agegroup_binary: 0.118186
-  totalwfh_bin: -0.081626
-  fulltimework: 0.084779
   persinc_fine: 0.086330
-  persinc_binary: 0.084467
   persinc_coarse: 0.068657
+  agegroup_fine: 0.145794
+  fulltimework: 0.084779
+  persinc_binary: 0.084467
+  agegroup_coarse: 0.163011
+  agegroup_binary: 0.118186
+  sex: 0.042319
+  totalwfh_bin: -0.081626
   mbikelicence: 0.055889
   otherlicence: 0.061997
-  sex: 0.042319
-  parttimework: 0.019435
   casualwork: 0.011824
+  parttimework: 0.019435
 
 active_transport
-  agegroup_coarse: -0.100385
   nolicence: 0.153658
-  agegroup_fine: -0.105764
   anywork: -0.102530
-  agegroup_binary: -0.058711
-  totalwfh_bin: -0.012631
-  fulltimework: -0.086424
   persinc_fine: -0.075006
-  persinc_binary: -0.062430
   persinc_coarse: -0.053554
+  agegroup_fine: -0.105764
+  fulltimework: -0.086424
+  persinc_binary: -0.062430
+  agegroup_coarse: -0.100385
+  agegroup_binary: -0.058711
+  sex: -0.027367
+  totalwfh_bin: -0.012631
   mbikelicence: -0.009081
   otherlicence: -0.020711
-  sex: -0.027367
-  parttimework: 0.006634
   casualwork: -0.013945
+  parttimework: 0.006634
 
 trip_efficiency
   nolicence: -0.292586
   anywork: 0.274816
   persinc_fine: 0.253165
-  agegroup_fine: 0.251255
-  agegroup_coarse: 0.238902
-  persinc_binary: 0.232175
   persinc_coarse: 0.229059
+  agegroup_fine: 0.251255
   fulltimework: 0.223449
+  persinc_binary: 0.232175
+  agegroup_coarse: 0.238902
   agegroup_binary: 0.139348
-  mbikelicence: 0.100084
   sex: 0.094345
-  otherlicence: 0.080837
   totalwfh_bin: -0.025657
-  parttimework: 0.024873
+  mbikelicence: 0.100084
+  otherlicence: 0.080837
   casualwork: -0.002000
+  parttimework: 0.024873
 
 trip_length
   nolicence: -0.273815
-  persinc_fine: 0.270182
   anywork: 0.260311
+  persinc_fine: 0.270182
   persinc_coarse: 0.252962
+  agegroup_fine: 0.221769
   fulltimework: 0.245236
   persinc_binary: 0.238978
-  agegroup_fine: 0.221769
   agegroup_coarse: 0.208190
-  sex: 0.131624
   agegroup_binary: 0.106866
+  sex: 0.131624
+  totalwfh_bin: 0.023711
   mbikelicence: 0.096502
   otherlicence: 0.085481
-  totalwfh_bin: 0.023711
   casualwork: -0.023127
   parttimework: -0.006619
 
