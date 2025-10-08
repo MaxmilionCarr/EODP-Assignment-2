@@ -52,6 +52,17 @@ def corr_values(X, y):
     r = X.apply(lambda col: col.corr(y, method="pearson")).dropna()
     return r.reindex(r.abs().sort_values(ascending=False).index)
 
+# Writes data summary txt file for graph features
+def write_report(series, out_path):
+    out_dir = os.path.dirname(out_path)
+    report_path = os.path.join(out_dir, "corr_summary.txt")
+    graph = os.path.splitext(os.path.basename(out_path))[0]
+    with open(report_path, "a", encoding="utf-8") as f:
+        f.write(f"{graph}\n")
+        for feat, val in series.items():
+            f.write(f"  {feat}: {val:.6f}\n")
+        f.write("\n")
+
 # Helper function to plot bar graphs
 def plot_bar(series, xlabel, title, out_path):
     fig, ax = plt.subplots(figsize=(10, max(3, 0.45 * len(series) + 2)))
@@ -69,6 +80,8 @@ def plot_bar(series, xlabel, title, out_path):
     out = os.path.abspath(out_path)
     plt.savefig(out, dpi=150, bbox_inches="tight")
     plt.close(fig)
+
+    write_report(series, out)
 
 # Perform Pearson correlation per travel mode
 def travel_mode_corr(df, X, out_dir=OUT_DIR):
@@ -102,6 +115,10 @@ def travel_mode_corr(df, X, out_dir=OUT_DIR):
 # Construct dataframe and produce plots
 def corr_analysis():
     os.makedirs(OUT_DIR, exist_ok=True)
+
+    # Rewrite file
+    with open(os.path.join(OUT_DIR, "corr_summary.txt"), "w", encoding="utf-8") as f:
+        f.write("Correlation summary\n\n")
 
     df = quick_data()
     df = df.merge(wasted_time(), on="persid", how="left").dropna(subset=["wasted_time"])
