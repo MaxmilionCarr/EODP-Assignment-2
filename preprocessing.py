@@ -122,6 +122,7 @@ def preprocess_persons(df):
     '''
     df = df.copy()
     
+    # Encodings done by ChatGPT (Saves time writing it all out)
     # ---- AGEGROUP encodings ----
     age_map_fine = {
         '0->4': 0, '5->9': 1, '10->14': 2, '15->19': 3, '20->24': 4,
