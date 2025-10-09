@@ -43,6 +43,20 @@ def fetch_transport_mode():
     f.close()
     return result
 
+# Calculate total trip length from vistadist
+def compute_trip_length():
+    '''
+    Compute total trip length per person (sum of vistadist across all trips).
+    '''
+    df = pd.read_csv("datasets/stops.csv", usecols=["persid", "vistadist"])
+    df["vistadist"] = pd.to_numeric(df["vistadist"], errors="coerce")
+    trip_len = (
+        df.groupby("persid", as_index=False)["vistadist"]
+          .mean()   # or .sum() if you want total distance per person instead of mean
+          .rename(columns={"vistadist": "overall_trip_length"})
+    )
+    return trip_len
+
 # Uses stops and 
 def compute_travel_efficiency():
     '''
@@ -192,6 +206,7 @@ def quick_data():
     result = preprocess_persons(df)
     result = result.merge(compute_travel_efficiency(), on='persid', how='left')
     result = result.merge(fetch_transport_mode(), on='persid', how='left')
+    result = result.merge(compute_trip_length(), on='persid', how='left')
     result = result.dropna(subset=['most_used_mode', 'overall_trip_efficiency'])  # drop rows where target is NaN
     return result
 
