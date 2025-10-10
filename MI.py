@@ -95,6 +95,13 @@ if __name__ == "__main__":
 
     print(nmi.sort_values(by='NMI', ascending=False))
 
+    import matplotlib.pyplot as plt
+    nmi.sort_values(by='NMI', ascending=True).plot.barh(figsize=(10, 8), legend=False)
+    plt.xlabel('Normalized Mutual Information (NMI)')
+    plt.title('Feature Selection using NMI')
+    plt.tight_layout()
+    plt.show()
+
 
 
 
