@@ -64,8 +64,3 @@ if __name__ == "__main__":
     plt.title('Feature Selection using NMI')
     plt.tight_layout()
     plt.show()
-
-
-
-
-
