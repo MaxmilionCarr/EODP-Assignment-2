@@ -31,12 +31,10 @@ result = quick_data()
 #Compute travel efficiency as the average of (distance / travel time) across all trips for each individual (persid).
 
 work_trip["wasted_time_work"] = pd.to_numeric(work_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(work_trip["journey_travel_time"], errors='coerce')
-work_trip["distance_work"] = work_trip["journey_distance"]
 work_trip["travel_time_work"] = work_trip["journey_travel_time"]
 overall_work_time_waste = work_trip[["persid", "wasted_time_work", "distance_work","travel_time_work"]].drop_duplicates()
 
-education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce')
-education_trip["distance_education"] = education_trip["journey_distance"]
+education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce'
 education_trip["travel_time_education"] = education_trip["journey_travel_time"]
 overall_education_time_waste = education_trip[["persid", "wasted_time_education", "distance_education","travel_time_education"]].drop_duplicates()
 
@@ -56,19 +54,18 @@ result["most_used_mode"] = result["most_used_mode"].replace(mapping)
 
 # Pick work if it exists, otherwise education
 merged["wasted_time"] = merged["wasted_time_work"].combine_first(merged["wasted_time_education"])
-merged["distance"] = merged["distance_work"].combine_first(merged["distance_education"])
 merged["travel_time"] = merged["travel_time_work"].combine_first(merged["travel_time_education"])
 
 # Final tidy dataframe
-overall_time_waste = merged[["persid", "wasted_time", "distance","travel_time"]]
+overall_time_waste = merged[["persid", "wasted_time","travel_time"]]
 
 # Merge all data COMPLETE PREPROCESSING
 result = result.merge(overall_time_waste, on='persid', how='left')
 
 
 # Select relevant columns for clustering
-results = result[["persid","agegroup", "overall_trip_efficiency", "wasted_time", "distance", "persinc", "totalwfh","travel_time"]].dropna()
-KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "distance", "persinc", "totalwfh","travel_time"]].dropna()
+results = result[["persid","agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
+KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
 
 # Scales required Data to prevent bias
 scaler = MinMaxScaler()
@@ -150,3 +147,4 @@ plt.figure(figsize=(10, 6))
 sns.heatmap(db_cluster_summary, annot=True, cmap="coolwarm")
 plt.title("Average Feature Values per DFBSCAN Cluster")
 plt.show()
+
