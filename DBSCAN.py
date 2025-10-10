@@ -21,8 +21,8 @@ STOPS_COL = ["persid","travtime", "vistadist" , "duration"]
 
 
 # Load the dataset
-work_trip = pd.read_csv("datasets/journey_education.csv", usecols=WORK_COL)
-education_trip = pd.read_csv("datasets/journey_work.csv", usecols=EDUCATION_COL)
+work_trip = pd.read_csv("datasets/journey_education.csv", usecols=EDUCATION_COL)
+education_trip = pd.read_csv("datasets/journey_work.csv", usecols=WORK_COL)
 stops = pd.read_csv("datasets/stops.csv", usecols=STOPS_COL)
 
 # initialises data with preprocessing functions

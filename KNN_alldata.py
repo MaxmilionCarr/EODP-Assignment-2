@@ -24,14 +24,12 @@ result = quick_data()
 #Compute Wasted time during travel for work and school
 
 work_trip["wasted_time_work"] = pd.to_numeric(work_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(work_trip["journey_travel_time"], errors='coerce')
-work_trip["distance_work"] = work_trip["journey_distance"]
 work_trip["time_work"] = work_trip["journey_travel_time"]
-overall_work_time_waste = work_trip[["persid", "wasted_time_work", "distance_work","time_work"]].drop_duplicates()
+overall_work_time_waste = work_trip[["persid", "wasted_time_work","time_work"]].drop_duplicates()
 
 education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce')
-education_trip["distance_education"] = education_trip["journey_distance"]
 education_trip["time_education"] = education_trip["journey_travel_time"]
-overall_education_time_waste = education_trip[["persid", "wasted_time_education", "distance_education","time_education"]].drop_duplicates()
+overall_education_time_waste = education_trip[["persid", "wasted_time_education", "time_education"]].drop_duplicates()
 
 
 
@@ -48,15 +46,14 @@ result["most_used_mode"] = result["most_used_mode"].replace(mapping)
 # Pick work if it exists, otherwise education
 merged = pd.merge(overall_education_time_waste, overall_work_time_waste, on="persid", how="outer")
 merged["wasted_time"] = merged["wasted_time_work"].combine_first(merged["wasted_time_education"])
-merged["distance"] = merged["distance_work"].combine_first(merged["distance_education"])
 merged["time"] = merged["time_work"].combine_first(merged["time_education"])
 
 # tidy dataframe
-overall_time_waste = merged[["persid", "wasted_time", "distance","time"]]
+overall_time_waste = merged[["persid", "wasted_time","time"]]
 result = result.merge(overall_time_waste, on='persid', how='left')
 
 # Specify data to be used in analysis
-KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "distance", "persinc", "totalwfh","time"]]
+KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","time"]]
 
 # Scales required Data to prevent bias
 scaler = MinMaxScaler()
