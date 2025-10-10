@@ -32,11 +32,11 @@ result = quick_data()
 
 work_trip["wasted_time_work"] = pd.to_numeric(work_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(work_trip["journey_travel_time"], errors='coerce')
 work_trip["travel_time_work"] = work_trip["journey_travel_time"]
-overall_work_time_waste = work_trip[["persid", "wasted_time_work", "distance_work","travel_time_work"]].drop_duplicates()
+overall_work_time_waste = work_trip[["persid", "wasted_time_work", "travel_time_work"]].drop_duplicates()
 
-education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce'
+education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce')
 education_trip["travel_time_education"] = education_trip["journey_travel_time"]
-overall_education_time_waste = education_trip[["persid", "wasted_time_education", "distance_education","travel_time_education"]].drop_duplicates()
+overall_education_time_waste = education_trip[["persid", "wasted_time_education", "travel_time_education"]].drop_duplicates()
 
 merged = pd.merge(overall_education_time_waste, overall_work_time_waste, on="persid", how="outer")
 
@@ -64,8 +64,8 @@ result = result.merge(overall_time_waste, on='persid', how='left')
 
 
 # Select relevant columns for clustering
-results = result[["persid","agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
-KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
+results = result[["persid","agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]].dropna()
+KNN_df = result[["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]].dropna()
 
 # Scales required Data to prevent bias
 scaler = MinMaxScaler()
