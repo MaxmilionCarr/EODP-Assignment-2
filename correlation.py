@@ -9,13 +9,6 @@ TITLE_SIZE = 24
 SUBTITLE_SIZE = 18
 LABEL_SIZE = 14
 
-# Wasted time
-JOURNEY_FILES = [
-    "datasets/journey_work.csv",
-    "datasets/journey_education.csv",
-]
-JOURNEY_COLS = ["persid", "journey_travel_time", "journey_elapsed_time"]
-
 # Transport types
 GROUPS = {
     "Public": ["Train", "Public Bus", "Tram", "School Bus"],
@@ -24,19 +17,6 @@ GROUPS = {
 }
 
 OUT_DIR = "correlation_graphs"
-
-# Calculate wasted time per person
-def wasted_time():
-    frames = []
-
-    for p in JOURNEY_FILES:
-        df = pd.read_csv(p, usecols=JOURNEY_COLS, low_memory=False)
-        df[JOURNEY_COLS[1:]] = df[JOURNEY_COLS[1:]].apply(pd.to_numeric, errors="coerce")
-        df["wasted_time"] = (df["journey_elapsed_time"] - df["journey_travel_time"]).clip(lower=0)
-        frames.append(df[["persid", "wasted_time"]])
-
-    j = pd.concat(frames, ignore_index=True)
-    return j.groupby("persid", as_index=False)["wasted_time"].mean()
 
 # Filter feature matrix
 def get_X(df):
@@ -140,7 +120,6 @@ def corr_analysis():
         f.write("Correlation summary\n\n")
 
     df = quick_data()
-    df = df.merge(wasted_time(), on="persid", how="left").dropna(subset=["wasted_time"])  # keep if you still want this plot
 
     x = get_X(df)
 

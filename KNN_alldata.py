@@ -1,4 +1,3 @@
-print("Running LMI.py")
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -8,37 +7,25 @@ import matplotlib.pyplot as plt
 from preprocessing import quick_data
 from sklearn.preprocessing import MinMaxScaler
 import seaborn as sns
-from sklearn.utils import resample
+
 
 result = quick_data()
 
-#Resample data to ensure balanced classes
-clean_df = result[["agegroup_fine", "overall_trip_efficiency", "persinc_fine", "totalwfh_ord","most_used_mode", "travel_time"]].dropna() #FIX THIS
-clean_df = pd.concat([
-    resample(df, n_samples=225, random_state=42, replace=False)
-    for
-      _, df in clean_df.groupby("most_used_mode")
-])
+# Specify data to be used in analysis
+KNN_df = result[["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord", "travel_time"]]
 
-# Scale
+# Scales required Data to prevent bias
 scaler = MinMaxScaler()
-norm_data = pd.DataFrame(
-    scaler.fit_transform(clean_df.drop(columns="most_used_mode")),
-    columns=clean_df.columns[:-1]
-)
+norm_KNN_data = pd.DataFrame(scaler.fit_transform(KNN_df.dropna()), columns=KNN_df.columns)
 
-# Split
-X_train, X_test, y_train, y_test = train_test_split(
-    norm_data,
-    clean_df["most_used_mode"],
-    test_size=0.2,
-    random_state=42
-)
+# Splits data into train and test
+X_train, X_test, y_train, y_test = train_test_split(norm_KNN_data.dropna(), result.dropna()["most_used_mode"], test_size=0.2, random_state=42)
+
 #Creates the knn Classifier
-knn = KNeighborsClassifier(n_neighbors=4)  # You can change the number of neighbors
+knn = KNeighborsClassifier(n_neighbors=6)  # You can change the number of neighbors
 knn.fit(X_train, y_train)
 
-# Demonstrates accuracy of KNN model
+# Demonstrates accuracy of KNN model with classification report parameters
 y_pred = knn.predict(X_test)
 print("Accuracy:", accuracy_score(y_test, y_pred))
 print("Classification Report:\n", classification_report(y_test, y_pred))
@@ -51,7 +38,7 @@ plt.ylabel("Actual")
 plt.title("Confusion Matrix for KNN")
 plt.show()
 
-
+#Creates the graph to find the optimal K value
 error_rates = []
 
 for k in range(1, 21):
@@ -65,4 +52,5 @@ plt.plot(range(1, 21), error_rates, marker='o', linestyle='--', color='blue')
 plt.title('Error Rate vs. K Value')
 plt.xlabel('K')
 plt.ylabel('Error Rate')
+
 plt.show() 

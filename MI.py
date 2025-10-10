@@ -3,9 +3,6 @@ import pandas as pd
 from scipy.stats import entropy
 from preprocessing import quick_data
 
-NORMAL_MI_THRESHOLD = 0.1  # threshold for selecting features
-
-
 def compute_prob(labels: pd.Series, weights: pd.Series = None):
     """Return probability of each category in `labels`, weighted if weights given."""
     if weights is None:
@@ -46,40 +43,6 @@ def compute_normalized_mutual_info(x: pd.Series, y: pd.Series, weights: pd.Serie
     H_y = compute_entropy(y, weights)
     H_y_given_x = compute_conditional_entropy(x, y, weights)
     return (H_y - H_y_given_x) / np.sqrt(H_x * H_y) if H_x > 0 and H_y > 0 else 0.0
-
-def select_features(df: pd.DataFrame, target_col='most_used_mode', weights_col='perspoststratweight', threshold=NORMAL_MI_THRESHOLD):
-    """Select features with NMI above threshold."""
-    y = df[target_col]
-    weights = df[weights_col] if weights_col in df.columns else None
-    features = df.drop(columns=[target_col, weights_col] if weights_col in df.columns else [target_col])
-
-    selected_features = []
-    for col in features.columns:
-        nmi = compute_normalized_mutual_info(features[col], y, weights)
-        if nmi >= threshold:
-            selected_features.append(col)
-            print(f"Selected {col} with NMI={nmi:.4f}")
-        else:
-            print(f"Rejected {col} with NMI={nmi:.4f}")
-
-    # Get rid of duplicate features (Different encodings of same variable) and keep the one with highest NMI
-    final_features = []
-    seen_prefixes = set()
-    for col in selected_features:
-        prefix = col.split('_')[0]  # assuming encoding suffixes are separated by '_'
-        if prefix not in seen_prefixes:
-            seen_prefixes.add(prefix)
-            final_features.append(col)
-        else:
-            # If already seen, check if current has higher NMI than the one already selected
-            existing_col = next(f for f in final_features if f.startswith(prefix))
-            existing_nmi = compute_normalized_mutual_info(df[existing_col], y, weights)
-            current_nmi = compute_normalized_mutual_info(df[col], y, weights)
-            if current_nmi > existing_nmi:
-                final_features.remove(existing_col)
-                final_features.append(col)
-
-    return final_features
 
 if __name__ == "__main__":
     df = quick_data().drop(columns=['persid'])
