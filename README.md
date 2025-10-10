@@ -10,7 +10,7 @@ pre-processing, correlation, clustering and learning models to produce conclusio
 
 ## Installation
 1. Clone repository
-2. Read requirements - "pip install -r requirements.txt"
+2. Install requirements - "pip install -r requirements.txt"
 
 ## Run
 Execute the run.py file - "python run.py all"
