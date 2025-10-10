@@ -144,6 +144,9 @@ def corr_analysis():
         out_path=os.path.join(OUT_DIR, "trip_length.png"),
     )
 
+def main():
+    corr_analysis()
+
 # Run program
 if __name__ == "__main__":
-    corr_analysis()
+    main()

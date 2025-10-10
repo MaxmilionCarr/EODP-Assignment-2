@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 from scipy.stats import entropy
 from preprocessing import quick_data
+import matplotlib.pyplot as plt
+import os
+
+GRAPH_DIR = "MI_graphs"
+if not os.path.exists(GRAPH_DIR):
+    os.makedirs(GRAPH_DIR)
 
 def compute_prob(labels: pd.Series, weights: pd.Series = None):
     """Return probability of each category in `labels`, weighted if weights given."""
@@ -44,11 +50,8 @@ def compute_normalized_mutual_info(x: pd.Series, y: pd.Series, weights: pd.Serie
     H_y_given_x = compute_conditional_entropy(x, y, weights)
     return (H_y - H_y_given_x) / np.sqrt(H_x * H_y) if H_x > 0 and H_y > 0 else 0.0
 
-if __name__ == "__main__":
+def main():
     df = quick_data().drop(columns=['persid'])
-    training_len = int(len(df) * 0.6)
-    training = df[0:training_len]
-    testing  = df[training_len:]
     y = df.pop('most_used_mode')
     weights = df.pop('perspoststratweight')
 
@@ -58,9 +61,12 @@ if __name__ == "__main__":
 
     print(nmi.sort_values(by='NMI', ascending=False))
 
-    import matplotlib.pyplot as plt
     nmi.sort_values(by='NMI', ascending=True).plot.barh(figsize=(10, 8), legend=False)
     plt.xlabel('Normalized Mutual Information (NMI)')
     plt.title('Feature Selection using NMI')
     plt.tight_layout()
-    plt.show()
+    plt.savefig(os.path.join(GRAPH_DIR, "nmi_feature_selection.png"), bbox_inches="tight")
+    plt.show() 
+
+if __name__ == "__main__":
+    main()

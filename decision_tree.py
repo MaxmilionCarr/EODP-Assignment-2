@@ -8,6 +8,11 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from preprocessing import quick_data
+import os
+
+GRAPH_DIR = "decision_tree_graphs"
+if not os.path.exists(GRAPH_DIR):
+    os.makedirs(GRAPH_DIR)
 
 
 def evaluate_single_bootstrap(X, y, weights, depth, min_samples, seed):
@@ -75,6 +80,7 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=final_clf.classes_)
     disp.plot(cmap="Blues", xticks_rotation=45)
     plt.title("Confusion Matrix for Best Decision Tree")
+    plt.savefig(os.path.join(GRAPH_DIR, "confusion_matrix.png"), bbox_inches="tight")
     plt.show()
 
     # ---- Classification report ----
@@ -102,6 +108,7 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     plt.title("Feature Importance Ranking (Decision Tree)")
     plt.ylabel("Importance Score")
     plt.tight_layout()
+    plt.savefig(os.path.join(GRAPH_DIR, "feature_importance.png"), bbox_inches="tight")
     plt.show()
 
     # ---- Accuracy heatmap for parameter tuning ----
@@ -116,12 +123,15 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     plt.xlabel("min_samples_leaf")
     plt.ylabel("max_depth")
     plt.title("Accuracy Landscape across Parameters")
+    plt.savefig(os.path.join(GRAPH_DIR, "optimisation_heatmap.png"), bbox_inches="tight")
     plt.show()
 
     return final_clf, mean_acc
 
-
-if __name__ == "__main__":
+def main():
     selected_features = ["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]
     print("Selected features:", selected_features)
     run_decision_tree(selected_features, n_boot=50, n_jobs=-1)
+
+if __name__ == "__main__":
+    main()
