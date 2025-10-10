@@ -14,5 +14,5 @@ pre-processing, correlation, clustering and learning models to produce conclusio
 
 ## Run
 Execute the run.py file - "python run.py all"
-# Individual tests available
+
 
