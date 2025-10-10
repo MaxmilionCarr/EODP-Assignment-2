@@ -13,69 +13,18 @@ from sklearn.cluster import AgglomerativeClustering, DBSCAN, KMeans
 from scipy.cluster.hierarchy import dendrogram, linkage
 
 
-# Finds set data needed for PCA preprocessing and clustering
-EDUCATION_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
-WORK_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
-STOPS_COL = ["persid","travtime", "vistadist" , "duration"]
-
-
-
-# Load the dataset
-work_trip = pd.read_csv("datasets/journey_education.csv", usecols=EDUCATION_COL)
-education_trip = pd.read_csv("datasets/journey_work.csv", usecols=WORK_COL)
-stops = pd.read_csv("datasets/stops.csv", usecols=STOPS_COL)
-
-# initialises data with preprocessing functions
 result = quick_data()
 
-#Compute travel efficiency as the average of (distance / travel time) across all trips for each individual (persid).
-
-work_trip["wasted_time_work"] = pd.to_numeric(work_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(work_trip["journey_travel_time"], errors='coerce')
-work_trip["travel_time_work"] = work_trip["journey_travel_time"]
-overall_work_time_waste = work_trip[["persid", "wasted_time_work","travel_time_work"]].drop_duplicates()
-
-education_trip["wasted_time_education"] = pd.to_numeric(education_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(education_trip["journey_travel_time"], errors='coerce')
-education_trip["travel_time_education"] = education_trip["journey_travel_time"]
-overall_education_time_waste = education_trip[["persid", "wasted_time_education","travel_time_education"]].drop_duplicates()
-
-merged = pd.merge(overall_education_time_waste, overall_work_time_waste, on="persid", how="outer")
-
-# Create binning categories for modes of transport
-mapping = {
-    "Bicycle": "Active", "Mobility Scooter": "Active", "Motorcycle": "Private",
-    "Public Bus": "Public", "Rideshare Service": "Public", "School Bus": "Public",
-    "Taxi": "Private", "Train": "Public", "Tram": "Public",
-    "Vehicle Driver": "Private", "Vehicle Passenger": "Private", "Walking": "Active", "Other": "Private",
-    "Plane" : "Public", "Running/jogging" : "Active"
-}
-
-#Maps binning categories
-result["most_used_mode"] = result["most_used_mode"].replace(mapping)
-
-# Pick work if it exists, otherwise education
-merged["wasted_time"] = merged["wasted_time_work"].combine_first(merged["wasted_time_education"])
-merged["travel_time"] = merged["travel_time_work"].combine_first(merged["travel_time_education"])
-
-# Final tidy dataframe
-overall_time_waste = merged[["persid", "wasted_time","travel_time"]]
-
-# Merge all data COMPLETE PREPROCESSING
-result = result.merge(overall_time_waste, on='persid', how='left')
-
-
 # Select relevant columns for clustering
-results = result[["persid","agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
-KNN_df = result[["agegroup", "overall_trip_efficiency", "wasted_time", "persinc", "totalwfh","travel_time"]].dropna()
+results = result[["persid","agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]].dropna()
+KNN_df = result[["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]].dropna()
 
 # Scales required Data to prevent bias
 scaler = MinMaxScaler()
-norm_KNN_data = pd.DataFrame(scaler.fit_transform(KNN_df), columns=KNN_df.columns)
+norm_KNN_data = pd.DataFrame(scaler.fit_transform(KNN_df), columns=KNN_df.columns, index=KNN_df.index)
 
 # Use normalised data (remove NaNs)
 data_clean = norm_KNN_data
-
-
-
 
 # Agglomerative clustering setup
 
@@ -138,7 +87,7 @@ plt.show()
 
 # Analyze feature similarities
 
-data_clean.drop(columns=["pca1", "pca2","most_used_mode", "agg_cluster","agg3_layer"], inplace=True)
+data_clean.drop(columns=["pca1", "pca2","most_used_mode", "agg_cluster"], inplace=True)
 db_cluster_summary = data_clean.groupby("db_cluster").mean(numeric_only=True)
 print("\nCluster feature means:\n", db_cluster_summary)
 

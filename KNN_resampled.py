@@ -10,35 +10,10 @@ from sklearn.preprocessing import MinMaxScaler
 import seaborn as sns
 from sklearn.utils import resample
 
-EDUCATION_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
-WORK_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
-STOPS_COL = ["persid","travtime", "vistadist" , "duration"]
-
-
-
-# Load the dataset
-work_trip = pd.read_csv("datasets/journey_education.csv", usecols=WORK_COL)
-education_trip = pd.read_csv("datasets/journey_work.csv", usecols=EDUCATION_COL)
-stops = pd.read_csv("datasets/stops.csv", usecols=STOPS_COL)
-
-# initialises data with preprocessing functions
 result = quick_data()
 
-
-
-# Create binning categories for modes of transport
-mapping = {
-    "Bicycle": "Active", "Mobility Scooter": "Active", "Motorcycle": "Private",
-    "Public Bus": "Public", "Rideshare Service": "Public", "School Bus": "Public",
-    "Taxi": "Private", "Train": "Public", "Tram": "Public",
-    "Vehicle Driver": "Private", "Vehicle Passenger": "Private", "Walking": "Active", "Other": "Private",
-    "Plane" : "Public", "Running/jogging" : "Active"
-}
-
-result["most_used_mode"] = result["most_used_mode"].replace(mapping)
-
 #Resample data to ensure balanced classes
-clean_df = result[["agegroup", "overall_trip_efficiency", "persinc", "totalwfh","most_used_mode"]].dropna()
+clean_df = result[["agegroup_fine", "overall_trip_efficiency", "persinc_fine", "totalwfh_ord","most_used_mode", "travel_time"]].dropna() #FIX THIS
 clean_df = pd.concat([
     resample(df, n_samples=225, random_state=42, replace=False)
     for

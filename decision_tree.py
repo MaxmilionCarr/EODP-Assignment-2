@@ -8,7 +8,6 @@ from sklearn.metrics import (
 import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 from preprocessing import quick_data
-from MI import select_features
 
 
 def evaluate_single_bootstrap(X, y, weights, depth, min_samples, seed):
@@ -33,19 +32,8 @@ def evaluate_single_bootstrap(X, y, weights, depth, min_samples, seed):
 def run_decision_tree(selected_features, target_col='most_used_mode', random_state=42, n_boot=50, n_jobs=-1):
     df = quick_data().drop(columns=['persid'])
 
-    # Group transport modes
-    mapping = {
-        "Bicycle": "Active", "Mobility Scooter": "Active", "Motorcycle": "Private",
-        "Public Bus": "Public", "Rideshare Service": "Public", "School Bus": "Public",
-        "Taxi": "Private", "Train": "Public", "Tram": "Public",
-        "Vehicle Driver": "Private", "Vehicle Passenger": "Private",
-        "Walking": "Active", "Other": "Private",
-        "Plane": "Public", "Running/jogging": "Active"
-    }
-    df["most_used_mode"] = df["most_used_mode"].replace(mapping)
-
     weights = df['perspoststratweight'] if 'perspoststratweight' in df.columns else None
-    X = df[selected_features]
+    X = df[selected_features].copy()
     y = df[target_col]
 
     # store accuracy + params across bootstraps
@@ -134,6 +122,6 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
 
 
 if __name__ == "__main__":
-    selected_features = select_features(quick_data().drop(columns=['persid']))
+    selected_features = ["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]
     print("Selected features:", selected_features)
     run_decision_tree(selected_features, n_boot=50, n_jobs=-1)
