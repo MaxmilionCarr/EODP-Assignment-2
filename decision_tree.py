@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.tree import DecisionTreeClassifier, plot_tree
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
@@ -14,9 +13,12 @@ GRAPH_DIR = "decision_tree_graphs"
 if not os.path.exists(GRAPH_DIR):
     os.makedirs(GRAPH_DIR)
 
+# AI Acknowledgement: ChatGPT was used to help structure the code formatting (simplification), bootstrapping and parallelisation
 
 def evaluate_single_bootstrap(X, y, weights, depth, min_samples, seed):
-    """Train + evaluate one bootstrap split of the decision tree."""
+    '''
+    Evaluate a single bootstrap iteration of decision tree with given params.
+    '''
     X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(
         X, y, weights, test_size=0.2, stratify=y, random_state=seed
     )
@@ -35,6 +37,9 @@ def evaluate_single_bootstrap(X, y, weights, depth, min_samples, seed):
 
 
 def run_decision_tree(selected_features, target_col='most_used_mode', random_state=42, n_boot=50, n_jobs=-1):
+    '''
+    Run decision tree with bootstrapped parameter tuning and visualisations.
+    '''
     df = quick_data().drop(columns=['persid'])
 
     weights = df['perspoststratweight'] if 'perspoststratweight' in df.columns else None
@@ -44,6 +49,7 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     # store accuracy + params across bootstraps
     all_results = []
 
+    # ---- Parameter tuning with bootstrapping ----
     for depth in range(1, 10):
         for min_samples in range(1, 6):
             results = Parallel(n_jobs=n_jobs)(
@@ -129,8 +135,14 @@ def run_decision_tree(selected_features, target_col='most_used_mode', random_sta
     return final_clf, mean_acc
 
 def main():
+    '''
+    Main function to run decision tree with selected features.
+    '''
+
     selected_features = ["agegroup_fine", "overall_trip_efficiency", "wasted_time", "persinc_fine", "totalwfh_ord","travel_time"]
     print("Selected features:", selected_features)
+    
+    # n_jobs=-1 uses all available CPU cores
     run_decision_tree(selected_features, n_boot=50, n_jobs=-1)
 
 if __name__ == "__main__":

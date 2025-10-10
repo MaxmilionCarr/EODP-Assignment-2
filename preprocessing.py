@@ -1,6 +1,4 @@
 import pandas as pd
-import numpy as np
-import csv
 
 PERSONS_COLUMNS = 'persid,agegroup,sex,relationship,carlicence,mbikelicence,otherlicence,nolicence,fulltimework,parttimework,casualwork,anywork,studying,emptype,persinc,anywfh,wfhmon,wfhtue,wfhwed,wfhthu,wfhfri,wfhsat,wfhsun,homesubregion_ASGS,homeregion_ASGS'.split(',')
 JOURNEY_EDUCATION_COLUMNS = 'persid,jteid,dayType,start_loc,start_stopid,start_time,start_LGA,end_loc,end_stopid,end_time,end_LGA,mainmode_desc_01,mainmode_desc_02,mainmode_desc_03,mainmode_desc_04,mainmode_desc_05,mainmode_desc_06,mainmode_desc_07,mainmode_desc_08,mainmode_desc_09,mainmode_desc_10,mainmode_desc_11,mainmode_desc_12,mainmode_desc_13,mainmode_desc_14,mainmode_desc_15,destpurp1_desc_01,destpurp1_desc_02,destpurp1_desc_03,destpurp1_desc_04,destpurp1_desc_05,destpurp1_desc_06,destpurp1_desc_07,destpurp1_desc_08,destpurp1_desc_09,destpurp1_desc_10,destpurp1_desc_11,destpurp1_desc_12,destpurp1_desc_13,destpurp1_desc_14,destpurp1_desc_15,destplace1_desc_01,destplace1_desc_02,destplace1_desc_03,destplace1_desc_04,destplace1_desc_05,destplace1_desc_06,destplace1_desc_07,destplace1_desc_08,destplace1_desc_09,destplace1_desc_10,destplace1_desc_11,destplace1_desc_12,destplace1_desc_13,destplace1_desc_14,destplace1_desc_15,startime_01,startime_02,startime_03,startime_04,startime_05,startime_06,startime_07,startime_08,startime_09,startime_10,startime_11,startime_12,startime_13,startime_14,startime_15,arrtime_01,arrtime_02,arrtime_03,arrtime_04,arrtime_05,arrtime_06,arrtime_07,arrtime_08,arrtime_09,arrtime_10,arrtime_11,arrtime_12,arrtime_13,arrtime_14,arrtime_15,vistadist_01,vistadist_02,vistadist_03,vistadist_04,vistadist_05,vistadist_06,vistadist_07,vistadist_08,vistadist_09,vistadist_10,vistadist_11,vistadist_12,vistadist_13,vistadist_14,vistadist_15,travtime_01,travtime_02,travtime_03,travtime_04,travtime_05,travtime_06,travtime_07,travtime_08,travtime_09,travtime_10,travtime_11,travtime_12,travtime_13,travtime_14,travtime_15,main_journey_mode,journey_travel_time,journey_distance,journey_elapsed_time'.split(',')
@@ -62,12 +60,12 @@ def compute_trip_length():
     df["vistadist"] = pd.to_numeric(df["vistadist"], errors="coerce")
     trip_len = (
         df.groupby("persid", as_index=False)["vistadist"]
-          .mean()   # or .sum() if you want total distance per person instead of mean
+          .mean()
           .rename(columns={"vistadist": "overall_trip_length"})
     )
     return trip_len
 
-# Uses stops and 
+# Uses stops dataset to compute travel efficiency
 def compute_travel_efficiency():
     '''
     Compute travel efficiency as the average of (distance / travel time) across all trips for each individual (persid).
@@ -91,15 +89,15 @@ def fetch_data():
     return df
 
 def fetch_wfh_labels(df):
-    """
+    '''
     Return a pandas Series of WFH frequency labels
     ('Never', 'Occasional', 'Frequent', 'Always'),
     counting people not in work force as 0 WFH days.
-    """
+    '''
     wfh_cols = ["wfhmon", "wfhtue", "wfhwed", "wfhthu",
                 "wfhfri", "wfhsat", "wfhsun"]
 
-    # convert Yes/No to 1/0, everything else → 0
+    # convert Yes/No to 1/0, everything else 0
     wfh_numeric = df[wfh_cols].replace({'Yes': 1, 'No': 0})
     wfh_numeric = wfh_numeric.apply(pd.to_numeric, errors='coerce').fillna(0)
 
@@ -111,36 +109,20 @@ def fetch_wfh_labels(df):
     labels = ['Never', 'Occasional', 'Frequent', 'Always']
     return pd.cut(wfhsum, bins=bins, labels=labels)
 
-
-def categories_persons(df):
+def journey_time():
     '''
-    Fetch categories for analysis of all columns
+    Compute overall wasted time and travel time per person (persid)
+    using journey_work and journey_education datasets.
+    Wasted time = elapsed time - travel time
     '''
-    categories = {}
-    df.drop(columns=['persid'], axis=1, inplace=True)
-    for col in df.columns:
-        if df[col].dtype == 'object':
-            categories[col] = df[col].astype('category').cat.categories.tolist()
-        elif df[col].dtype in ['int64', 'float64']:
-            categories[col] = {
-                'min': df[col].min(),
-                'max': df[col].max(),
-                'mean': df[col].mean(),
-                'median': df[col].median(),
-                'std': df[col].std()
-            }
-        else:
-            categories[col] = 'Unsupported data type'
-    return categories
-
-def journey_time() -> pd.DataFrame:
     TIME_EDUCATION_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
     TIME_WORK_COL = ["persid", "journey_travel_time" ,"journey_distance","journey_elapsed_time"]
 
-    # Load the datasetjourney_work
+    # Load the datasets
     work_trip = pd.read_csv("datasets/journey_work.csv", usecols=TIME_WORK_COL)
     education_trip = pd.read_csv("datasets/journey_education.csv", usecols=TIME_EDUCATION_COL)
 
+    # Calculate wasted time and travel time for work and education trips
     work_trip["wasted_time_work"] = pd.to_numeric(work_trip["journey_elapsed_time"], errors='coerce') - pd.to_numeric(work_trip["journey_travel_time"], errors='coerce')
     work_trip["travel_time_work"] = work_trip["journey_travel_time"]
     overall_work_time_waste = work_trip[["persid", "wasted_time_work", "travel_time_work"]].drop_duplicates()
@@ -149,6 +131,7 @@ def journey_time() -> pd.DataFrame:
     education_trip["travel_time_education"] = education_trip["journey_travel_time"]
     overall_education_time_waste = education_trip[["persid", "wasted_time_education", "travel_time_education"]].drop_duplicates()
 
+    # Merge the two datasets on persid
     merged = pd.merge(overall_education_time_waste, overall_work_time_waste, on="persid", how="outer")
 
     # Pick work if it exists, otherwise education
@@ -162,22 +145,20 @@ def journey_time() -> pd.DataFrame:
 
 # ---- Encoding strategies ----
 
-ORDINAL_ENCODING = ['agegroup', 'persinc', 'totalwfh'] #NEED TO DO TOTAL WFH
 ONE_HOT_ENCODING = ['relationship', 'carlicence', 'studying', 'emptype', 'homesubregion_ASGS', 'homeregion_ASGS']
-NUMERIC = []
 BINARY = ['sex', 'mbikelicence', 'otherlicence', 'nolicence', 'fulltimework', 'parttimework', 'casualwork', 'anywork']
-from sklearn.preprocessing import OrdinalEncoder
 
-
-# NEED TO DO, THIS IS THE PREPROCESSING
 def preprocess_persons(df):
     '''
     Preprocess the persons dataframe with multiple encoding strategies
     for ordinal variables (fine, coarse, binary).
     '''
+
     df = df.copy()
     
-    # Encodings done by ChatGPT (Saves time writing it all out)
+    """AI declaration: The prompts on ChatGPT 5 'provide a fine, broad and binary encoding for 
+    age, personal income and total wfh frequency' and 'provide me the code to one-hot encode and binary
+    encode the final variables' were used in supporting the creation of the following code."""
     # ---- AGEGROUP encodings ----
     age_map_fine = {
         '0->4': 0, '5->9': 1, '10->14': 2, '15->19': 3, '20->24': 4,
@@ -243,13 +224,16 @@ def preprocess_persons(df):
 
 # ---- Final Quick Data Fetch ----
 def quick_data():
+    '''
+    Fetch the fully preprocessed dataframe ready for analysis.
+    '''
     df = fetch_data()
     result = preprocess_persons(df)
     result = result.merge(compute_travel_efficiency(), on='persid', how='left')
     result = result.merge(fetch_transport_mode(), on='persid', how='left')
     result = result.merge(compute_trip_length(), on='persid', how='left')
     result = result.merge(journey_time(), on='persid', how='left')
-    result = result.dropna(subset=['most_used_mode', 'overall_trip_efficiency'])  # drop rows where target is NaN
+    result = result.dropna(subset=['most_used_mode', 'overall_trip_efficiency'])
     return result
 
 
