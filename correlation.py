@@ -35,17 +35,16 @@ def feature_order(df, X):
     targets["trip_length"] = pd.to_numeric(df["overall_trip_length"], errors="coerce")
 
     # Mode-group targets
-    for name, modes in GROUPS.items():
-        y = df["most_used_mode"].isin(modes).astype(float)
-        if y.nunique() == 2:  # ensure both classes exist
+    for name in ("Public", "Private", "Active"):
+        y = (df["most_used_mode"] == name).astype(float)
+        if y.nunique() == 2:
             targets[f"{name}_transport"] = y
 
-    # Compute correlations matrix
     R_all = pd.DataFrame(index=X.columns, dtype=float)
     for key, y in targets.items():
         ok = np.isfinite(y)
         R_all[key] = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson"))
-
+        
     R_all = R_all.fillna(0.0)
     order = R_all.abs().max(axis=1).sort_values(ascending=False).index
     return order, R_all
@@ -76,7 +75,7 @@ def plot_bar(series, xlabel, title, out_path):
     ax.barh(series.index, series.values)
     ax.axvline(0, linestyle="--", linewidth=1)
     # Manually set x axis scale for easier graph comparisons
-    ax.set_xlim(-0.3, 0.3)
+    ax.set_xlim(-0.35, 0.35)
     ax.set_xlabel(xlabel, fontsize=LABEL_SIZE)
     ax.set_ylabel("Feature", fontsize=LABEL_SIZE)
     ax.set_title(title, fontsize=TITLE_SIZE)
@@ -93,23 +92,24 @@ def plot_bar(series, xlabel, title, out_path):
 def travel_mode_corr(df, X, order, out_dir=OUT_DIR):
     os.makedirs(out_dir, exist_ok=True)
 
-    groups = {
-        name: modes
-        for name, modes in GROUPS.items()
-        if df["most_used_mode"].isin(modes).astype(int).nunique() == 2
-    }
+    for name in ("Public", "Private", "Active"):
+        y = (df["most_used_mode"] == name).astype(float)
 
-    for name, modes in groups.items():
-        y = df["most_used_mode"].isin(modes).astype(float)
+        if y.nunique() != 2:
+            # write a diagnostic PNG so filenames always refresh
+            s = pd.Series(0.0, index=order, dtype=float)
+            plot_bar(s, "Pearson r",
+                     f"Feature Correlations with {name} Transport (no valid class split)",
+                     os.path.join(out_dir, f"{name.lower()}_transport.png"))
+            continue
+
         ok = np.isfinite(y)
         s = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson")).fillna(0.0)
-        s = s.reindex(order)  # enforce global order
-        plot_bar(
-            s,
-            xlabel="Pearson r",
-            title=f"Feature Correlations with {name} Transport",
-            out_path=os.path.join(out_dir, f"{name.lower()}_transport.png"),
-        )
+        s = s.reindex(order)
+
+        plot_bar(s, "Pearson r",
+                 f"Feature Correlations with {name} Transport",
+                 os.path.join(out_dir, f"{name.lower()}_transport.png"))
 
 # Construct dataframe and produce plots
 def corr_analysis():

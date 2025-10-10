@@ -6,17 +6,71 @@ wasted_time
   anywork: 0.073940
   fulltimework: -0.003070
   persinc_binary: 0.002658
+  agegroup_coarse: -0.009852
   persinc_fine: 0.019158
   persinc_coarse: 0.015885
+  agegroup_binary: -0.017323
+  agegroup_fine: 0.005480
   otherlicence: -0.016521
   casualwork: 0.073313
   mbikelicence: -0.019974
   sex: -0.066859
-  agegroup_coarse: -0.009852
-  agegroup_fine: 0.005480
   totalwfh_bin: 0.044960
   parttimework: 0.036218
-  agegroup_binary: -0.017323
+
+public_transport
+  travel_time: 0.320527
+  nolicence: 0.052789
+  anywork: 0.012842
+  fulltimework: 0.023415
+  persinc_binary: -0.016975
+  agegroup_coarse: -0.119708
+  persinc_fine: -0.024507
+  persinc_coarse: -0.018987
+  agegroup_binary: -0.099293
+  agegroup_fine: -0.099015
+  otherlicence: -0.032577
+  casualwork: 0.009228
+  mbikelicence: -0.038184
+  sex: 0.002810
+  totalwfh_bin: 0.025235
+  parttimework: -0.022548
+
+private_transport
+  travel_time: -0.126033
+  nolicence: -0.102485
+  anywork: 0.034136
+  fulltimework: 0.031878
+  persinc_binary: 0.041758
+  agegroup_coarse: 0.068966
+  persinc_fine: 0.030636
+  persinc_coarse: 0.023250
+  agegroup_binary: 0.052114
+  agegroup_fine: 0.054472
+  otherlicence: 0.042304
+  casualwork: -0.020739
+  mbikelicence: 0.025800
+  sex: 0.003120
+  totalwfh_bin: -0.047436
+  parttimework: 0.016563
+
+active_transport
+  travel_time: -0.093861
+  nolicence: 0.081707
+  anywork: -0.050348
+  fulltimework: -0.055702
+  persinc_binary: -0.036739
+  agegroup_coarse: 0.009022
+  persinc_fine: -0.017790
+  persinc_coarse: -0.013205
+  agegroup_binary: 0.013536
+  agegroup_fine: 0.010521
+  otherlicence: -0.025526
+  casualwork: 0.017640
+  mbikelicence: -0.001641
+  sex: -0.005846
+  totalwfh_bin: 0.037210
+  parttimework: -0.002548
 
 trip_efficiency
   travel_time: 0.081653
@@ -24,17 +78,17 @@ trip_efficiency
   anywork: 0.137599
   fulltimework: 0.126603
   persinc_binary: 0.120111
+  agegroup_coarse: 0.053045
   persinc_fine: 0.112284
   persinc_coarse: 0.103834
+  agegroup_binary: 0.033040
+  agegroup_fine: 0.051326
   otherlicence: 0.079221
   casualwork: -0.008395
   mbikelicence: 0.068311
   sex: 0.057215
-  agegroup_coarse: 0.053045
-  agegroup_fine: 0.051326
   totalwfh_bin: -0.037376
   parttimework: 0.020128
-  agegroup_binary: 0.033040
 
 trip_length
   travel_time: 0.141317
@@ -42,15 +96,15 @@ trip_length
   anywork: 0.112535
   fulltimework: 0.117216
   persinc_binary: 0.102548
+  agegroup_coarse: 0.032480
   persinc_fine: 0.108962
   persinc_coarse: 0.109864
+  agegroup_binary: 0.021376
+  agegroup_fine: 0.035952
   otherlicence: 0.042144
   casualwork: -0.002500
   mbikelicence: 0.035628
   sex: 0.033827
-  agegroup_coarse: 0.032480
-  agegroup_fine: 0.035952
   totalwfh_bin: 0.000005
   parttimework: -0.005470
-  agegroup_binary: 0.021376
 
