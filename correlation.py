@@ -44,7 +44,6 @@ def feature_order(df, X):
     for key, y in targets.items():
         ok = np.isfinite(y)
         R_all[key] = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson"))
-        
     R_all = R_all.fillna(0.0)
     order = R_all.abs().max(axis=1).sort_values(ascending=False).index
     return order, R_all
@@ -94,14 +93,6 @@ def travel_mode_corr(df, X, order, out_dir=OUT_DIR):
 
     for name in ("Public", "Private", "Active"):
         y = (df["most_used_mode"] == name).astype(float)
-
-        if y.nunique() != 2:
-            # write a diagnostic PNG so filenames always refresh
-            s = pd.Series(0.0, index=order, dtype=float)
-            plot_bar(s, "Pearson r",
-                     f"Feature Correlations with {name} Transport (no valid class split)",
-                     os.path.join(out_dir, f"{name.lower()}_transport.png"))
-            continue
 
         ok = np.isfinite(y)
         s = X.loc[ok].apply(lambda col: col.corr(y.loc[ok], method="pearson")).fillna(0.0)
